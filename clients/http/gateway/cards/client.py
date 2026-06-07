@@ -1,135 +1,43 @@
-"""API клиент для работы с эндпоинтами карт сервиса http-gateway."""
-
-from typing import TypedDict, Optional, Dict, Any
-import httpx
-from ...client import HTTPClient
+from typing import TypedDict
+from httpx import Response
+from clients.http.client import HTTPClient
 
 
-class VirtualCardRequest(TypedDict):
-    """Типизированный словарь для запроса создания виртуальной карты."""
-    user_id: str
-    account_id: str
-    currency: str
-    card_type: Optional[str]
-    metadata: Optional[Dict[str, Any]]
+class IssueVirtualCardRequestDict(TypedDict):
+    """
+    Структура данных для выпуска виртуальной карты.
+    """
+    userId: str
+    accountId: str
 
 
-class PhysicalCardRequest(TypedDict):
-    """Типизированный словарь для запроса создания физической карты."""
-    user_id: str
-    account_id: str
-    currency: str
-    delivery_address: str
-    card_holder_name: str
-    card_type: Optional[str]
-    metadata: Optional[Dict[str, Any]]
+class IssuePhysicalCardRequestDict(TypedDict):
+    """
+    Структура данных для выпуска физической карты.
+    """
+    userId: str
+    accountId: str
 
 
 class CardsGatewayHTTPClient(HTTPClient):
-    """Клиент для работы с API карт сервиса http-gateway."""
+    """
+    Клиент для взаимодействия с /api/v1/cards сервиса http-gateway.
+    """
 
-    def __init__(self, base_url: str, timeout: float = 10.0):
+    def issue_virtual_card_api(self, request: IssueVirtualCardRequestDict) -> Response:
         """
-        Инициализация клиента для работы с API карт.
+        Выпуск виртуальной карты.
 
-        Args:
-            base_url: Базовый URL сервиса http-gateway
-            timeout: Таймаут запросов в секундах
+        :param request: Словарь с данными для выпуска виртуальной карты.
+        :return: Ответ от сервера (объект httpx.Response).
         """
-        super().__init__(base_url, timeout)
+        return self.post("/api/v1/cards/issue-virtual-card", json=request)
 
-    def issue_virtual_card_api(self, request: VirtualCardRequest) -> httpx.Response:
+    def issue_physical_card_api(self, request: IssuePhysicalCardRequestDict) -> Response:
         """
-        Создание виртуальной карты через API.
+        Выпуск физической карты.
 
-        Выполняет POST-запрос к эндпоинту /api/v1/cards/issue-virtual-card
-        для создания виртуальной карты.
-
-        Args:
-            request: Словарь с данными для создания виртуальной карты.
-                    Должен содержать обязательные поля:
-                    - user_id: Идентификатор пользователя
-                    - account_id: Идентификатор счета
-                    - currency: Валюта карты (например, "RUB", "USD")
-                    Опциональные поля:
-                    - card_type: Тип карты (например, "debit", "credit")
-                    - metadata: Дополнительные метаданные в виде словаря
-
-        Returns:
-            httpx.Response: Объект ответа от сервера, содержащий статус код,
-                           заголовки и тело ответа.
-
-        Examples:
-            >>> client = CardsGatewayHTTPClient("http://localhost:8080")
-            >>> request_data = {
-            ...     "user_id": "user123",
-            ...     "account_id": "acc456",
-            ...     "currency": "RUB",
-            ...     "card_type": "debit"
-            ... }
-            >>> response = client.issue_virtual_card_api(request_data)
-            >>> print(response.status_code)
-            201
+        :param request: Словарь с данными для выпуска физической карты.
+        :return: Ответ от сервера (объект httpx.Response).
         """
-        endpoint = "/api/v1/cards/issue-virtual-card"
-
-        with self._get_client() as client:
-            response = client.post(
-                url=endpoint,
-                json=request,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            )
-            return response
-
-    def issue_physical_card_api(self, request: PhysicalCardRequest) -> httpx.Response:
-        """
-        Создание физической карты через API.
-
-        Выполняет POST-запрос к эндпоинту /api/v1/cards/issue-physical-card
-        для создания физической карты с доставкой.
-
-        Args:
-            request: Словарь с данными для создания физической карты.
-                    Должен содержать обязательные поля:
-                    - user_id: Идентификатор пользователя
-                    - account_id: Идентификатор счета
-                    - currency: Валюта карты (например, "RUB", "USD")
-                    - delivery_address: Адрес доставки карты
-                    - card_holder_name: Имя держателя карты
-                    Опциональные поля:
-                    - card_type: Тип карты (например, "debit", "credit")
-                    - metadata: Дополнительные метаданные в виде словаря
-
-        Returns:
-            httpx.Response: Объект ответа от сервера, содержащий статус код,
-                           заголовки и тело ответа.
-
-        Examples:
-            >>> client = CardsGatewayHTTPClient("http://localhost:8080")
-            >>> request_data = {
-            ...     "user_id": "user123",
-            ...     "account_id": "acc456",
-            ...     "currency": "RUB",
-            ...     "delivery_address": "г. Москва, ул. Примерная, д. 1",
-            ...     "card_holder_name": "Иванов Иван Иванович",
-            ...     "card_type": "credit"
-            ... }
-            >>> response = client.issue_physical_card_api(request_data)
-            >>> print(response.status_code)
-            201
-        """
-        endpoint = "/api/v1/cards/issue-physical-card"
-
-        with self._get_client() as client:
-            response = client.post(
-                url=endpoint,
-                json=request,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            )
-            return response
+        return self.post("/api/v1/cards/issue-physical-card", json=request)
