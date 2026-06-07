@@ -1,129 +1,69 @@
-"""API клиент для работы с эндпоинтами документов сервиса http-gateway."""
+from typing import TypedDict
 
-from typing import TypedDict, Optional
-import httpx
-from ...client import HTTPClient
+from httpx import Response
+
+from clients.http.client import HTTPClient
+from clients.http.gateway.client import build_gateway_http_client
 
 
 class DocumentDict(TypedDict):
-    """Типизированный словарь для описания документа."""
+    """
+    Описание структуры документа.
+    """
     url: str
     document: str
 
 
 class GetTariffDocumentResponseDict(TypedDict):
-    """Типизированный словарь для ответа с документом тарифа."""
+    """
+    Описание структуры ответа получения документа тарифа.
+    """
     tariff: DocumentDict
 
 
 class GetContractDocumentResponseDict(TypedDict):
-    """Типизированный словарь для ответа с документом контракта."""
+    """
+    Описание структуры ответа получения документа контракта.
+    """
     contract: DocumentDict
 
 
-class GetTariffDocumentQuery(TypedDict):
-    """Параметры для получения документа тарифа."""
-    account_id: str
-
-
-class GetContractDocumentQuery(TypedDict):
-    """Параметры для получения документа контракта."""
-    account_id: str
-
-
 class DocumentsGatewayHTTPClient(HTTPClient):
-    """Клиент для работы с API документов сервиса http-gateway."""
-    
-    def __init__(self, base_url: str, timeout: float = 10.0):
+    """
+    Клиент для взаимодействия с /api/v1/documents сервиса http-gateway.
+    """
+
+    def get_tariff_document_api(self, account_id: str) -> Response:
         """
-        Инициализация клиента для работы с API документов.
-        
-        Args:
-            base_url: Базовый URL сервиса http-gateway
-            timeout: Таймаут запросов в секундах
+        Получить тарифа по счету.
+
+        :param account_id: Идентификатор счета.
+        :return: Ответ от сервера (объект httpx.Response).
         """
-        super().__init__(base_url, timeout)
-    
-    def get_tariff_document_api(self, account_id: str) -> httpx.Response:
+        return self.get(f"/api/v1/documents/tariff-document/{account_id}")
+
+    def get_contract_document_api(self, account_id: str) -> Response:
         """
-        Получение документа тарифа по идентификатору счёта.
-        
-        Выполняет GET-запрос к эндпоинту /api/v1/documents/tariff-document
-        
-        Args:
-            account_id: Идентификатор счёта
-            
-        Returns:
-            httpx.Response: Объект ответа от сервера с документом тарифа
+        Получить контракта по счету.
+
+        :param account_id: Идентификатор счета.
+        :return: Ответ от сервера (объект httpx.Response).
         """
-        endpoint = "/api/v1/documents/tariff-document"
-        params = {"accountId": account_id}
-        
-        with self._get_client() as client:
-            response = client.get(
-                url=endpoint,
-                params=params,
-                headers={"Accept": "application/json"}
-            )
-            return response
-    
-    def get_contract_document_api(self, account_id: str) -> httpx.Response:
-        """
-        Получение документа контракта по идентификатору счёта.
-        
-        Выполняет GET-запрос к эндпоинту /api/v1/documents/contract-document
-        
-        Args:
-            account_id: Идентификатор счёта
-            
-        Returns:
-            httpx.Response: Объект ответа от сервера с документом контракта
-        """
-        endpoint = "/api/v1/documents/contract-document"
-        params = {"accountId": account_id}
-        
-        with self._get_client() as client:
-            response = client.get(
-                url=endpoint,
-                params=params,
-                headers={"Accept": "application/json"}
-            )
-            return response
-    
+        return self.get(f"/api/v1/documents/contract-document/{account_id}")
+
     def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseDict:
-        """
-        Высокоуровневый метод для получения документа тарифа.
-        
-        Извлекает JSON-ответ из API и возвращает его в типизированном виде.
-        
-        Args:
-            account_id: Идентификатор счёта
-            
-        Returns:
-            GetTariffDocumentResponseDict: Словарь с документом тарифа
-            
-        Raises:
-            httpx.HTTPStatusError: Если запрос завершился с ошибкой
-        """
         response = self.get_tariff_document_api(account_id)
-        response.raise_for_status()  # Проверяем успешность запроса
         return response.json()
-    
+
     def get_contract_document(self, account_id: str) -> GetContractDocumentResponseDict:
-        """
-        Высокоуровневый метод для получения документа контракта.
-        
-        Извлекает JSON-ответ из API и возвращает его в типизированном виде.
-        
-        Args:
-            account_id: Идентификатор счёта
-            
-        Returns:
-            GetContractDocumentResponseDict: Словарь с документом контракта
-            
-        Raises:
-            httpx.HTTPStatusError: Если запрос завершился с ошибкой
-        """
         response = self.get_contract_document_api(account_id)
-        response.raise_for_status()  # Проверяем успешность запроса
         return response.json()
+
+
+def build_documents_gateway_http_client() -> DocumentsGatewayHTTPClient:
+    """
+    Функция создаёт экземпляр DocumentsGatewayHTTPClient с уже настроенным HTTP-клиентом.
+
+    :return: Готовый к использованию DocumentsGatewayHTTPClient.
+    """
+    return DocumentsGatewayHTTPClient(client=build_gateway_http_client())
