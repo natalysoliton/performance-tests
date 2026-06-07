@@ -1,0 +1,5 @@
+FROM python:3.9.13
+WORKDIR /app
+COPY . .
+RUN pip install redis
+CMD ["python", "docker-compose-basics.py"]
