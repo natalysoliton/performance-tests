@@ -1,68 +1,43 @@
-import httpx
 import time
-import json
+import httpx
 
-BASE_URL = "http://localhost:8003"
+create_user_payload = {
+    "email": f"user.{time.time()}@example.com",
+    "lastName": "string",
+    "firstName": "string",
+    "middleName": "string",
+    "phoneNumber": "string"
+}
+create_user_response = httpx.post("http://localhost:8003/api/v1/users", json=create_user_payload)
+create_user_response_data = create_user_response.json()
 
+open_credit_card_account_payload = {
+    "userId": create_user_response_data["user"]["id"]
+}
+open_credit_card_account_response = httpx.post(
+    "http://localhost:8003/api/v1/accounts/open-credit-card-account",
+    json=open_credit_card_account_payload
+)
+open_credit_card_account_response_data = open_credit_card_account_response.json()
 
-def run_workflow():
-    """Основной поток выполнения."""
+make_purchase_operation_payload = {
+    "status": "IN_PROGRESS",
+    "amount": 77.99,
+    "cardId": open_credit_card_account_response_data["account"]["cards"][0]["id"],
+    "category": "taxi",
+    "accountId": open_credit_card_account_response_data["account"]["id"]
+}
+make_purchase_operation_response = httpx.post(
+    "http://localhost:8003/api/v1/operations/make-purchase-operation",
+    json=make_purchase_operation_payload
+)
+make_purchase_operation_response_data = make_purchase_operation_response.json()
 
-    # 1. Создать пользователя
-    email = f"user_{int(time.time())}@bank.com"
-    user_resp = httpx.post(
-        f"{BASE_URL}/api/v1/users",
-        json={"email": email, "firstName": "Ivan", "lastName": "Petrov"},
-        timeout=10
-    )
-    user_resp.raise_for_status()
-    user_id = user_resp.json()["id"]
-    print(f"User created: {user_id}")
+get_operation_receipt_response = httpx.get(
+    f"http://localhost:8003/api/v1/operations/operation-receipt/"
+    f"{make_purchase_operation_response_data['operation']['id']}"
+)
+get_operation_receipt_response_data = get_operation_receipt_response.json()
 
-    # 2. Создать кредитный счёт
-    credit_resp = httpx.post(
-        f"{BASE_URL}/api/v1/accounts/open-credit-card-account",
-        json={"userId": user_id, "creditLimit": 50000, "currency": "RUB"},
-        timeout=10
-    )
-    credit_resp.raise_for_status()
-    credit_data = credit_resp.json()
-    account_id = credit_data["account"]["id"]
-    card_id = credit_data["cards"][0]["id"]
-    print(f"Account: {account_id}, Card: {card_id}")
-
-    # 3. Совершить покупку
-    purchase_resp = httpx.post(
-        f"{BASE_URL}/api/v1/operations/make-purchase-operation",
-        json={
-            "status": "IN_PROGRESS",
-            "amount": 77.99,
-            "category": "taxi",
-            "cardId": card_id,
-            "accountId": account_id
-        },
-        timeout=10
-    )
-    purchase_resp.raise_for_status()
-    operation_id = purchase_resp.json()["operationId"]
-    print(f"Purchase operation: {operation_id}")
-
-    # 4. Получить чек
-    receipt_resp = httpx.get(
-        f"{BASE_URL}/api/v1/operations/operation-receipt/{operation_id}",
-        timeout=10
-    )
-    receipt_resp.raise_for_status()
-    receipt_data = receipt_resp.json()
-
-    # 5. Вывести результат
-    print(f"\nStatus: {receipt_resp.status_code}")
-    print("Receipt JSON:")
-    print(json.dumps(receipt_data, indent=2, ensure_ascii=False))
-
-
-if __name__ == "__main__":
-    try:
-        run_workflow()
-    except Exception as e:
-        print(f"Error: {e}")
+print('Get operation receipt response:', get_operation_receipt_response_data)
+print('Get operation receipt status code:', get_operation_receipt_response.status_code)
