@@ -10,6 +10,7 @@ create_user_payload = {
     "phoneNumber": "string"
 }
 
+
 create_user_response = httpx.post("http://localhost:8003/api/v1/users", json=create_user_payload)
 create_user_response_data = create_user_response.json()
 
