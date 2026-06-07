@@ -1,22 +1,14 @@
-"""Базовый HTTP клиент для работы с API."""
+from httpx import Client
 
-import httpx
+
+def build_gateway_http_client() -> Client:
+    """
+    Функция создаёт экземпляр httpx.Client с базовыми настройками для сервиса http-gateway.
+
+    :return: Готовый к использованию объект httpx.Client.
+    """
+    return Client(timeout=100, base_url="http://localhost:8003")
 
 
 class HTTPClient:
-    """Базовый класс HTTP клиента для выполнения запросов."""
-
-    def __init__(self, base_url: str, timeout: float = 10.0):
-        """
-        Инициализация HTTP клиента.
-
-        Args:
-            base_url: Базовый URL API сервера
-            timeout: Таймаут запросов в секундах
-        """
-        self.base_url = base_url.rstrip('/')
-        self.timeout = timeout
-
-    def _get_client(self) -> httpx.Client:
-        """Создает и возвращает HTTP клиент."""
-        return httpx.Client(base_url=self.base_url, timeout=self.timeout)
+    pass
