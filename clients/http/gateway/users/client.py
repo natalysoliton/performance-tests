@@ -15,6 +15,11 @@ class UsersGatewayHTTPClient(HTTPClient):
     """
     Клиент для взаимодействия с /api/v1/users сервиса http-gateway.
     """
+    def create_user(self) -> CreateUserResponseSchema:
+        # Генерация данных теперь происходит внутри схемы запроса
+        request = CreateUserRequestSchema()
+        response = self.create_user_api(request)
+        return CreateUserResponseSchema.model_validate_json(response.text)
 
     def get_user_api(self, user_id: str) -> Response:
         """
