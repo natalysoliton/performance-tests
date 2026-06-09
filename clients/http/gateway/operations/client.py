@@ -1,6 +1,7 @@
 """
 HTTP-клиент для взаимодействия с /api/v1/operations сервиса http-gateway.
 Использует Pydantic-модели для валидации запросов и ответов.
+Теперь все поля (status, amount, category) генерируются автоматически на уровне моделей.
 """
 
 from httpx import Response, QueryParams
@@ -33,9 +34,6 @@ from clients.http.gateway.operations.schema import (
     MakeBillPaymentOperationResponseSchema,
     MakeCashWithdrawalOperationResponseSchema,
 )
-
-
-# Все TypedDict модели удалены, теперь используются Pydantic-модели из schema.py
 
 
 class OperationsGatewayHTTPClient(HTTPClient):
@@ -222,14 +220,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_fee_operation(self, card_id: str, account_id: str) -> MakeFeeOperationResponseSchema:
         """
         Создает операцию комиссии.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeFeeOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=55.77,
             card_id=card_id,
             account_id=account_id
         )
@@ -239,14 +237,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_top_up_operation(self, card_id: str, account_id: str) -> MakeTopUpOperationResponseSchema:
         """
         Создает операцию пополнения счета.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeTopUpOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=1500.11,
             card_id=card_id,
             account_id=account_id
         )
@@ -256,14 +254,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_cashback_operation(self, card_id: str, account_id: str) -> MakeCashbackOperationResponseSchema:
         """
         Создает операцию начисления кэшбэка.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeCashbackOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=1500.11,
             card_id=card_id,
             account_id=account_id
         )
@@ -273,14 +271,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_transfer_operation(self, card_id: str, account_id: str) -> MakeTransferOperationResponseSchema:
         """
         Создает операцию перевода средств.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeTransferOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=15.11,
             card_id=card_id,
             account_id=account_id
         )
@@ -290,16 +288,15 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_purchase_operation(self, card_id: str, account_id: str) -> MakePurchaseOperationResponseSchema:
         """
         Создает операцию покупки.
+        Все данные (status, amount, category) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakePurchaseOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=55.77,
             card_id=card_id,
-            category="taxi",
             account_id=account_id
         )
         response = self.make_purchase_operation_api(request)
@@ -308,14 +305,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
     def make_bill_payment_operation(self, card_id: str, account_id: str) -> MakeBillPaymentOperationResponseSchema:
         """
         Создает операцию оплаты счета.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeBillPaymentOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=55.77,
             card_id=card_id,
             account_id=account_id
         )
@@ -326,14 +323,14 @@ class OperationsGatewayHTTPClient(HTTPClient):
                                        account_id: str) -> MakeCashWithdrawalOperationResponseSchema:
         """
         Создает операцию снятия наличных средств.
+        Все данные (status, amount) генерируются автоматически.
 
         :param card_id: ID карты для операции.
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
+        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeCashWithdrawalOperationRequestSchema(
-            status=OperationStatus.COMPLETED,
-            amount=55.77,
             card_id=card_id,
             account_id=account_id
         )

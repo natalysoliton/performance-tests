@@ -1,7 +1,42 @@
+"""
+Pydantic-модели для клиента OperationsGatewayHTTPClient.
+
+Этот модуль содержит все схемы данных для работы с операциями:
+- OperationType: перечисление типов операций
+- OperationStatus: перечисление статусов операций
+- OperationSchema: базовая модель операции
+- OperationReceiptSchema: модель чека операции
+- OperationsSummarySchema: модель статистики операций
+- GetOperationResponseSchema: ответ на получение операции
+- GetOperationsQuerySchema: запрос на получение списка операций
+- GetOperationsResponseSchema: ответ со списком операций
+- GetOperationsSummaryQuerySchema: запрос на получение статистики
+- GetOperationsSummaryResponseSchema: ответ со статистикой
+- GetOperationReceiptResponseSchema: ответ с чеком операции
+- MakeOperationRequestSchema: базовая модель запроса операции
+- MakeFeeOperationRequestSchema: запрос на операцию комиссии
+- MakeFeeOperationResponseSchema: ответ на операцию комиссии
+- MakeTopUpOperationRequestSchema: запрос на операцию пополнения
+- MakeTopUpOperationResponseSchema: ответ на операцию пополнения
+- MakeCashbackOperationRequestSchema: запрос на операцию кэшбэка
+- MakeCashbackOperationResponseSchema: ответ на операцию кэшбэка
+- MakeTransferOperationRequestSchema: запрос на операцию перевода
+- MakeTransferOperationResponseSchema: ответ на операцию перевода
+- MakePurchaseOperationRequestSchema: запрос на операцию покупки
+- MakePurchaseOperationResponseSchema: ответ на операцию покупки
+- MakeBillPaymentOperationRequestSchema: запрос на оплату счета
+- MakeBillPaymentOperationResponseSchema: ответ на оплату счета
+- MakeCashWithdrawalOperationRequestSchema: запрос на снятие наличных
+- MakeCashWithdrawalOperationResponseSchema: ответ на снятие наличных
+"""
+
 from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, ConfigDict, HttpUrl
+
+# Импортируем заранее созданный экземпляр класса Fake
+from tools.fakers import fake
 
 
 class OperationType(StrEnum):
@@ -48,7 +83,7 @@ class OperationSchema(BaseModel):
     status: OperationStatus
     amount: float
     card_id: str = Field(alias="cardId")
-    category: str | None = None  # Категория может отсутствовать для некоторых типов операций
+    category: str | None = None
     created_at: datetime = Field(alias="createdAt")
     account_id: str = Field(alias="accountId")
 
@@ -155,8 +190,12 @@ class MakeOperationRequestSchema(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
 
-    status: OperationStatus
-    amount: float
+    # Генерируем случайный статус операции из enum
+    status: OperationStatus = Field(
+        default_factory=lambda: fake.enum(OperationStatus)
+    )
+    # Генерируем случайную сумму операции
+    amount: float = Field(default_factory=fake.amount)
     card_id: str = Field(alias="cardId")
     account_id: str = Field(alias="accountId")
 
@@ -164,6 +203,12 @@ class MakeOperationRequestSchema(BaseModel):
 class MakeFeeOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции комиссии.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
@@ -181,6 +226,12 @@ class MakeFeeOperationResponseSchema(BaseModel):
 class MakeTopUpOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции пополнения.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
@@ -198,6 +249,12 @@ class MakeTopUpOperationResponseSchema(BaseModel):
 class MakeCashbackOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции кэшбэка.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
@@ -215,6 +272,12 @@ class MakeCashbackOperationResponseSchema(BaseModel):
 class MakeTransferOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции перевода.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
@@ -234,9 +297,16 @@ class MakePurchaseOperationRequestSchema(MakeOperationRequestSchema):
     Структура запроса для создания операции покупки.
 
     Attributes:
-        category: Категория покупки
+        category: Категория покупки (генерируется автоматически)
+
+    Наследует от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
-    category: str
+    # Генерируем случайную категорию покупки
+    category: str = Field(default_factory=fake.category)
 
 
 class MakePurchaseOperationResponseSchema(BaseModel):
@@ -252,6 +322,12 @@ class MakePurchaseOperationResponseSchema(BaseModel):
 class MakeBillPaymentOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции оплаты по счёту.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
@@ -269,6 +345,12 @@ class MakeBillPaymentOperationResponseSchema(BaseModel):
 class MakeCashWithdrawalOperationRequestSchema(MakeOperationRequestSchema):
     """
     Структура запроса для создания операции снятия наличных.
+
+    Наследует все поля от MakeOperationRequestSchema:
+    - status (генерируется автоматически)
+    - amount (генерируется автоматически)
+    - card_id (обязательный параметр)
+    - account_id (обязательный параметр)
     """
     pass
 
