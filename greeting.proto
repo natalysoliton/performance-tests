@@ -1,0 +1,23 @@
+// greeting.proto
+
+// Используем синтаксис protobuf версии 3 (актуальная версия).
+syntax = "proto3";
+
+// Название пакета (используется при генерации кода).
+package greeting;
+
+// Описание сервиса — набора доступных удалённых методов.
+service Greeter {
+  // Метод SayHello принимает HelloRequest и возвращает HelloReply.
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+// Сообщение запроса — содержит одно строковое поле `name`.
+message HelloRequest {
+  string name = 1;
+}
+
+// Сообщение ответа — строковое поле `message`, которое вернёт приветствие.
+message HelloReply {
+  string message = 1;
+}
