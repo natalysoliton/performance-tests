@@ -1,15 +1,3 @@
-"""
-gRPC API клиент для взаимодействия с CardsGatewayService.
-
-Предоставляет методы для работы с банковскими картами:
-- Выпуск виртуальной карты (IssueVirtualCard)
-- Выпуск физической карты (IssuePhysicalCard)
-
-Структура методов:
-- Низкоуровневые API-методы (*_api) - прямой вызов gRPC
-- Высокоуровневые методы-обёртки - удобные для использования в тестах
-"""
-
 from grpc import Channel
 
 from clients.grpc.client import GRPCClient
