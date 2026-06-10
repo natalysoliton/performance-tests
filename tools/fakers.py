@@ -1,10 +1,18 @@
 import time
-
+from google.protobuf.internal.enum_type_wrapper import EnumTypeWrapper
 from faker import Faker
 from faker.providers.python import TEnum
 
 
 class Fake:
+    def proto_enum(self, value: EnumTypeWrapper) -> int:
+        """
+        Выбирает случайное значение из proto enum-типа.
+
+        :param value: Proto enum-класс для генерации значения.
+        :return: Случайное значение из перечисления.
+        """
+        return self.faker.random_element(value.values())
     """
     Класс для генерации случайных тестовых данных с использованием библиотеки Faker.
     """
