@@ -2,11 +2,40 @@
 
 from typing import TypedDict, Optional, Dict, Any, Union
 import httpx
-from ...client import HTTPClient
+from httpx import Response, QueryParams
 
+from clients.http.client import HTTPClient, HTTPClientExtensions  # Импортируем тип extensions
+from clients.http.gateway.accounts.schema import (
+    GetAccountsQuerySchema,
+    GetAccountsResponseSchema,
+    OpenDepositAccountRequestSchema,
+    OpenDepositAccountResponseSchema,
+    OpenSavingsAccountRequestSchema,
+    OpenSavingsAccountResponseSchema,
+    OpenDebitCardAccountRequestSchema,
+    OpenDebitCardAccountResponseSchema,
+    OpenCreditCardAccountRequestSchema,
+    OpenCreditCardAccountResponseSchema
+)
+from clients.http.gateway.client import build_gateway_http_client
 
-# ===================== Базовые типы запросов =====================
+class AccountsGatewayHTTPClient(HTTPClient):
+    """
+    Клиент для взаимодействия с /api/v1/accounts сервиса http-gateway.
+    """
 
+    def get_accounts_api(self, query: GetAccountsQuerySchema):
+        """
+        Выполняет GET-запрос на получение списка счетов пользователя.
+
+        :param query: Pydantic-модель с параметрами запроса, например: {'userId': '123'}.
+        :return: Объект httpx.Response с данными о счетах.
+        """
+        return self.get(
+            "/api/v1/accounts",
+            params=QueryParams(**query.model_dump(by_alias=True)),
+            extensions=HTTPClientExtensions(route="/api/v1/accounts")  # Явно передаём логическое имя маршрута
+        )
 class BaseOperationQuery(TypedDict):
     """Базовый тип для параметров запросов операций."""
     accountId: str

@@ -1,17 +1,11 @@
-"""
-HTTP-клиент для взаимодействия с /api/v1/documents сервиса http-gateway.
-Использует Pydantic-модели для валидации запросов и ответов.
-"""
-
 from httpx import Response
 
-from clients.http.client import HTTPClient
+from clients.http.client import HTTPClient, HTTPClientExtensions  # Импортируем тип extensions
 from clients.http.gateway.client import build_gateway_http_client
 from clients.http.gateway.documents.schema import (
     GetTariffDocumentResponseSchema,
     GetContractDocumentResponseSchema
 )
-
 
 # Все TypedDict модели удалены, теперь используются Pydantic-модели из schema.py
 
@@ -19,29 +13,33 @@ from clients.http.gateway.documents.schema import (
 class DocumentsGatewayHTTPClient(HTTPClient):
     """
     Клиент для взаимодействия с /api/v1/documents сервиса http-gateway.
-
-    Предоставляет методы для работы с документами:
-    - Получение тарифного документа по ID счета
-    - Получение контрактного документа по ID счета
     """
 
     def get_tariff_document_api(self, account_id: str) -> Response:
         """
-        Получить тарифный документ по счету (низкоуровневый метод).
+        Получить тарифа по счету.
 
         :param account_id: Идентификатор счета.
         :return: Ответ от сервера (объект httpx.Response).
         """
-        return self.get(f"/api/v1/documents/tariff-document/{account_id}")
+        return self.get(
+            f"/api/v1/documents/tariff-document/{account_id}",
+            # Явно передаём логическое имя маршрута
+            extensions=HTTPClientExtensions(route="/api/v1/documents/tariff-document/{account_id}")
+        )
 
     def get_contract_document_api(self, account_id: str) -> Response:
         """
-        Получить контрактный документ по счету (низкоуровневый метод).
+        Получить контракта по счету.
 
         :param account_id: Идентификатор счета.
         :return: Ответ от сервера (объект httpx.Response).
         """
-        return self.get(f"/api/v1/documents/contract-document/{account_id}")
+        return self.get(
+            f"/api/v1/documents/contract-document/{account_id}",
+            # Явно передаём логическое имя маршрута
+            extensions=HTTPClientExtensions(route="/api/v1/documents/contract-document/{account_id}")
+        )
 
     def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseSchema:
         """

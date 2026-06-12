@@ -1,11 +1,7 @@
-"""
-HTTP-клиент для взаимодействия с /api/v1/accounts сервиса http-gateway.
-Использует Pydantic-модели для валидации запросов и ответов.
-"""
-
 from httpx import Response, QueryParams
+from locust.env import Environment  # Импорт окружения Locust
 
-from clients.http.client import HTTPClient
+from clients.http.client import HTTPClient, HTTPClientExtensions
 from clients.http.gateway.accounts.schema import (
     GetAccountsQuerySchema,
     GetAccountsResponseSchema,
@@ -19,7 +15,33 @@ from clients.http.gateway.accounts.schema import (
     OpenCreditCardAccountResponseSchema
 )
 from clients.http.gateway.client import build_gateway_http_client
+from clients.http.gateway.users.schema import (
+    GetUserResponseSchema,
+    CreateUserRequestSchema,
+    CreateUserResponseSchema
+)
+from clients.http.gateway.client import (
+    build_gateway_http_client,
+    build_gateway_locust_http_client  # Импорт билдера для нагрузочного тестирования
+)
 
+class UsersGatewayHTTPClient(HTTPClient):
+    """
+    Клиент для взаимодействия с /api/v1/users сервиса http-gateway.
+    """
+
+    def get_user_api(self, user_id: str) -> Response:
+        """
+        Получить данные пользователя по его user_id.
+
+        :param user_id: Идентификатор пользователя.
+        :return: Ответ от сервера (объект httpx.Response).
+        """
+
+        return self.get(
+            f"/api/v1/users/{user_id}",
+            extensions=HTTPClientExtensions(route="/api/v1/users/{user_id}")  # Явно передаём логическое имя маршрута
+        )
 
 class AccountsGatewayHTTPClient(HTTPClient):
     """
@@ -155,4 +177,24 @@ def build_accounts_gateway_http_client() -> AccountsGatewayHTTPClient:
 
     :return: Готовый к использованию AccountsGatewayHTTPClient.
     """
-    return AccountsGatewayHTTPClient(client=build_gateway_http_client())
+
+    def build_accounts_gateway_http_client() -> AccountsGatewayHTTPClient:
+        """
+        Функция создаёт экземпляр AccountsGatewayHTTPClient с уже настроенным HTTP-клиентом.
+
+        :return: Готовый к использованию AccountsGatewayHTTPClient.
+        """
+        return AccountsGatewayHTTPClient(client=build_gateway_http_client())
+
+    # Новый билдер для нагрузочного тестирования
+    def build_accounts_gateway_locust_http_client(environment: Environment) -> AccountsGatewayHTTPClient:
+        """
+        Функция создаёт экземпляр AccountsGatewayHTTPClient адаптированного под Locust.
+
+        Клиент автоматически собирает метрики и передаёт их в Locust через хуки.
+        Используется исключительно в нагрузочных тестах.
+
+        :param environment: объект окружения Locust.
+        :return: экземпляр AccountsGatewayHTTPClient с хуками сбора метрик.
+        """
+        return AccountsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
