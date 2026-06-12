@@ -1,13 +1,15 @@
 from httpx import Response
+from locust.env import Environment
 
-from clients.http.client import HTTPClient, HTTPClientExtensions  # Импортируем тип extensions
-from clients.http.gateway.client import build_gateway_http_client
+from clients.http.client import HTTPClient, HTTPClientExtensions
+from clients.http.gateway.client import (
+    build_gateway_http_client,
+    build_gateway_locust_http_client
+)
 from clients.http.gateway.documents.schema import (
     GetTariffDocumentResponseSchema,
     GetContractDocumentResponseSchema
 )
-
-# Все TypedDict модели удалены, теперь используются Pydantic-модели из schema.py
 
 
 class DocumentsGatewayHTTPClient(HTTPClient):
@@ -24,7 +26,6 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         """
         return self.get(
             f"/api/v1/documents/tariff-document/{account_id}",
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/documents/tariff-document/{account_id}")
         )
 
@@ -37,7 +38,6 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         """
         return self.get(
             f"/api/v1/documents/contract-document/{account_id}",
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/documents/contract-document/{account_id}")
         )
 
@@ -49,7 +49,6 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         :return: Pydantic-модель с данными тарифного документа.
         """
         response = self.get_tariff_document_api(account_id)
-        # Используем model_validate_json для безопасной десериализации
         return GetTariffDocumentResponseSchema.model_validate_json(response.text)
 
     def get_contract_document(self, account_id: str) -> GetContractDocumentResponseSchema:
@@ -60,7 +59,6 @@ class DocumentsGatewayHTTPClient(HTTPClient):
         :return: Pydantic-модель с данными контрактного документа.
         """
         response = self.get_contract_document_api(account_id)
-        # Используем model_validate_json для безопасной десериализации
         return GetContractDocumentResponseSchema.model_validate_json(response.text)
 
 
@@ -71,3 +69,21 @@ def build_documents_gateway_http_client() -> DocumentsGatewayHTTPClient:
     :return: Готовый к использованию DocumentsGatewayHTTPClient.
     """
     return DocumentsGatewayHTTPClient(client=build_gateway_http_client())
+
+
+def build_documents_gateway_locust_http_client(environment: Environment) -> DocumentsGatewayHTTPClient:
+    """
+    Создаёт экземпляр DocumentsGatewayHTTPClient, адаптированный для нагрузочного тестирования с Locust.
+
+    В отличие от стандартного билдера, этот клиент:
+    - использует HTTP-клиент со встроенными event_hooks для сбора метрик
+    - автоматически передаёт метрики (время ответа, статус, размер) в Locust
+    - отключает избыточное логирование HTTPX для чистоты вывода
+
+    Билдер предназначен исключительно для использования внутри load-тестов Locust.
+    Для обычных автотестов используйте build_documents_gateway_http_client().
+
+    :param environment: Объект окружения Locust, необходим для отправки метрик через events.request
+    :return: Экземпляр DocumentsGatewayHTTPClient с настроенным HTTP-клиентом для сбора метрик
+    """
+    return DocumentsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))

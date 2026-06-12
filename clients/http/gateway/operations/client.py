@@ -1,7 +1,11 @@
 from httpx import Response, QueryParams
+from locust.env import Environment
 
-from clients.http.client import HTTPClient, HTTPClientExtensions  # Импортируем тип extensions
-from clients.http.gateway.client import build_gateway_http_client
+from clients.http.client import HTTPClient, HTTPClientExtensions
+from clients.http.gateway.client import (
+    build_gateway_http_client,
+    build_gateway_locust_http_client
+)
 from clients.http.gateway.operations.schema import (
     GetOperationResponseSchema,
     GetOperationReceiptResponseSchema,
@@ -25,6 +29,7 @@ from clients.http.gateway.operations.schema import (
     MakeCashWithdrawalOperationResponseSchema
 )
 
+
 class OperationsGatewayHTTPClient(HTTPClient):
     """
     Клиент для взаимодействия с /api/v1/operations сервиса http-gateway.
@@ -39,7 +44,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         """
         return self.get(
             f"/api/v1/operations/{operation_id}",
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/operations/{operation_id}")
         )
 
@@ -52,7 +56,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         """
         return self.get(
             f"/api/v1/operations/operation-receipt/{operation_id}",
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/operations/operation-receipt/{operation_id}")
         )
 
@@ -60,13 +63,12 @@ class OperationsGatewayHTTPClient(HTTPClient):
         """
         Получает список операций по счёту.
 
-        :param query: Словарь с параметром accountId.
+        :param query: Pydantic-модель с параметром accountId.
         :return: Объект httpx.Response с операциями по счёту.
         """
         return self.get(
             "/api/v1/operations",
             params=QueryParams(**query.model_dump(by_alias=True)),
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/operations")
         )
 
@@ -74,15 +76,15 @@ class OperationsGatewayHTTPClient(HTTPClient):
         """
         Получает сводную статистику операций по счёту.
 
-        :param query: Словарь с параметром accountId.
+        :param query: Pydantic-модель с параметром accountId.
         :return: Объект httpx.Response с агрегированной информацией.
         """
         return self.get(
             "/api/v1/operations/operations-summary",
             params=QueryParams(**query.model_dump(by_alias=True)),
-            # Явно передаём логическое имя маршрута
             extensions=HTTPClientExtensions(route="/api/v1/operations/operations-summary")
         )
+
     def make_fee_operation_api(self, request: MakeFeeOperationRequestSchema) -> Response:
         """
         Создаёт операцию комиссии.
@@ -218,7 +220,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeFeeOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -235,7 +236,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeTopUpOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -252,7 +252,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeCashbackOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -269,7 +268,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeTransferOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -286,7 +284,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakePurchaseOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -303,7 +300,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeBillPaymentOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -321,7 +317,6 @@ class OperationsGatewayHTTPClient(HTTPClient):
         :param account_id: ID счета для операции.
         :return: Pydantic-модель с данными созданной операции.
         """
-        # Теперь передаем только card_id и account_id, остальное генерируется автоматически
         request = MakeCashWithdrawalOperationRequestSchema(
             card_id=card_id,
             account_id=account_id
@@ -337,3 +332,21 @@ def build_operations_gateway_http_client() -> OperationsGatewayHTTPClient:
     :return: Готовый к использованию OperationsGatewayHTTPClient.
     """
     return OperationsGatewayHTTPClient(client=build_gateway_http_client())
+
+
+def build_operations_gateway_locust_http_client(environment: Environment) -> OperationsGatewayHTTPClient:
+    """
+    Создаёт экземпляр OperationsGatewayHTTPClient, адаптированный для нагрузочного тестирования с Locust.
+
+    В отличие от стандартного билдера, этот клиент:
+    - использует HTTP-клиент со встроенными event_hooks для сбора метрик
+    - автоматически передаёт метрики (время ответа, статус, размер) в Locust
+    - отключает избыточное логирование HTTPX для чистоты вывода
+
+    Билдер предназначен исключительно для использования внутри load-тестов Locust.
+    Для обычных автотестов используйте build_operations_gateway_http_client().
+
+    :param environment: Объект окружения Locust, необходим для отправки метрик через events.request
+    :return: Экземпляр OperationsGatewayHTTPClient с настроенным HTTP-клиентом для сбора метрик
+    """
+    return OperationsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
