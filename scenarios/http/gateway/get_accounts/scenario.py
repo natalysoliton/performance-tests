@@ -6,13 +6,17 @@
 2. Открытие депозитного счёта (вес 2)
 3. Получение списка всех счетов (вес 6)
 
-Использует базовый GatewayHTTPTaskSet для централизованной инициализации клиентов.
+Использует базовый GatewayHTTPTaskSet для централизованной инициализации клиентов
+и LocustBaseUser для общих настроек виртуального пользователя.
 """
 
-from locust import User, between, task
+from locust import task
 
 # Импортируем базовый TaskSet для HTTP
 from clients.http.gateway.locust import GatewayHTTPTaskSet
+
+# Импортируем базового пользователя Locust
+from tools.locust.user import LocustBaseUser
 
 # Импортируем схемы ответов для типизации shared state
 from clients.http.gateway.users.schema import CreateUserResponseSchema
@@ -87,9 +91,13 @@ class GetAccountsTaskSet(GatewayHTTPTaskSet):
         )
 
 
-class GetAccountsScenarioUser(User):
+class GetAccountsScenarioUser(LocustBaseUser):
     """
     Пользователь Locust, исполняющий сценарий получения списка счетов через HTTP API.
+
+    Наследует от LocustBaseUser:
+    - host = "localhost" (фиктивное значение)
+    - wait_time = between(1, 3)
 
     Задачи выполняются в произвольном порядке с весами:
     - create_user: 2
@@ -97,11 +105,5 @@ class GetAccountsScenarioUser(User):
     - get_accounts: 6
     """
 
-    # Атрибут host обязателен для Locust (фиктивное значение)
-    host = "localhost"
-
     # Задачи, которые будет выполнять пользователь
     tasks = [GetAccountsTaskSet]
-
-    # Время ожидания между выполнением задач
-    wait_time = between(1, 3)
