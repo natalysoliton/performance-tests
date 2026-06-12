@@ -1,68 +1,74 @@
-from locust import HttpUser, between, task
-from tools.fakers import fake
+from locust import User, between, task
+
+from clients.http.gateway.users.client import (
+    build_users_gateway_locust_http_client,
+    UsersGatewayHTTPClient
+)
+from clients.http.gateway.accounts.client import (
+    build_accounts_gateway_locust_http_client,
+    AccountsGatewayHTTPClient
+)
+from clients.http.gateway.accounts.schema import OpenDebitCardAccountRequestSchema
 
 
-class OpenDebitCardAccountScenarioUser(HttpUser):
+class OpenDebitCardAccountScenarioUser(User):
     """
-    Виртуальный пользователь, который:
-    1. При старте создаёт нового пользователя
-    2. В рамках нагрузочной задачи открывает для него дебетовый счёт
+    Виртуальный пользователь, использующий кастомные API-клиенты.
+
+    Сценарий:
+    1. При старте (on_start) создаёт нового пользователя через UsersGatewayHTTPClient
+    2. В задаче @task открывает дебетовый счёт через AccountsGatewayHTTPClient
+
+    Метрики собираются автоматически через event hooks HTTPX.
     """
-    # Пауза между задачами (имитация реального поведения)
+
+    # Фиктивное поле host (требование Locust, не используется т.к. у нас свой клиент)
+    host = "localhost"
+
+    # Пауза между задачами (имитация реального поведения пользователя)
     wait_time = between(1, 3)
 
+    # Клиенты API (будут инициализированы в on_start)
+    users_gateway_client: UsersGatewayHTTPClient
+    accounts_gateway_client: AccountsGatewayHTTPClient
+
     # Сохраняем ID созданного пользователя
-    user_id: int = None
+    user_id: str = None
 
     def on_start(self) -> None:
         """
         Выполняется один раз при запуске каждого виртуального пользователя.
-        Создаём нового пользователя через API.
-        """
-        # Генерируем данные пользователя с помощью faker
-        request_body = {
-            "email": fake.email(),
-            "lastName": fake.last_name(),
-            "firstName": fake.first_name(),
-            "middleName": fake.middle_name(),
-            "phoneNumber": fake.phone_number()
-        }
 
-        # Отправляем POST-запрос на создание пользователя
-        with self.client.post(
-                "/api/v1/users",
-                json=request_body,
-                catch_response=True,
-                name="/api/v1/users (create)"
-        ) as response:
-            if response.status_code == 201:
-                # Сохраняем user_id из ответа сервера
-                response_data = response.json()
-                self.user_id = response_data["user"]["id"]
-                response.success()
-            else:
-                response.failure(f"Failed to create user: {response.status_code}")
-                # Прерываем выполнение этого пользователя, так как без user_id нельзя открыть счёт
-                self.environment.runner.quit()
+        Создаём API-клиенты с поддержкой метрик Locust и
+        создаём нового пользователя через API.
+        """
+        # Шаг 1: Инициализируем API-клиенты с привязкой к окружению Locust
+        # Передаём self.environment, чтобы клиенты могли отправлять метрики в Locust
+        self.users_gateway_client = build_users_gateway_locust_http_client(self.environment)
+        self.accounts_gateway_client = build_accounts_gateway_locust_http_client(self.environment)
+
+        # Шаг 2: Создаём пользователя через кастомный API-клиент
+        # Метод create_user() автоматически генерирует фейковые данные
+        create_user_response = self.users_gateway_client.create_user()
+
+        # Шаг 3: Сохраняем ID созданного пользователя для использования в задаче
+        self.user_id = create_user_response.user.id
 
     @task
-    def open_debit_card_account(self):
+    def open_debit_card_account(self) -> None:
         """
         Основная нагрузочная задача: открытие дебетового счёта.
-        Отправляем POST-запрос с user_id, полученным при создании пользователя.
+
+        Выполняет запрос POST /api/v1/accounts/open-debit-card-account
+        с использованием сохранённого user_id.
         """
         if self.user_id is None:
-            # Если пользователь не создан, пропускаем задачу
+            # Если по какой-то причине пользователь не создан, пропускаем задачу
             return
 
-        request_body = {
-            "userId": self.user_id
-        }
+        # Формируем запрос на открытие счёта с использованием Pydantic-модели
+        request_data = OpenDebitCardAccountRequestSchema(userId=self.user_id)
 
-        # Отправляем запрос на открытие счёта
-        # Явно указываем name для группировки всех таких запросов в статистике
-        self.client.post(
-            "/api/v1/accounts/open-debit-card-account",
-            json=request_body,
-            name="/api/v1/accounts/open-debit-card-account"
-        )
+        # Отправляем запрос через кастомный API-клиент
+        # Метрики (время ответа, статус, ошибки) собираются автоматически через event hooks
+        self.accounts_gateway_client.open_debit_card_account_api(request_data)

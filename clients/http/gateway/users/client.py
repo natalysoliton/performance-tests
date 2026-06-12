@@ -1,11 +1,11 @@
+from datetime import time
+
 from httpx import Response
 from locust.env import Environment  # Импорт окружения Locust
 
-from clients.http.client import HTTPClient, HTTPClientExtensions
-from clients.http.gateway.client import (
-    build_gateway_http_client,
-    build_gateway_locust_http_client  # Импорт билдера для нагрузочного тестирования
-)
+from clients.http.client import HTTPClient, HTTPClientExtensions, build_gateway_locust_http_client, \
+    build_gateway_http_client
+import clients.http.gateway.client
 from clients.http.gateway.users.schema import (
     GetUserResponseSchema,
     CreateUserRequestSchema,
@@ -97,3 +97,15 @@ def build_users_gateway_locust_http_client(environment: Environment) -> UsersGat
     :return: экземпляр UsersGatewayHTTPClient с хуками сбора метрик.
     """
     return UsersGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
+
+
+class CardsGatewayHTTPClient:
+    pass
+
+
+class VirtualCardRequest:
+    pass
+
+
+class PhysicalCardRequest:
+    pass

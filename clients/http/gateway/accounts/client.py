@@ -198,3 +198,7 @@ def build_accounts_gateway_http_client() -> AccountsGatewayHTTPClient:
         :return: экземпляр AccountsGatewayHTTPClient с хуками сбора метрик.
         """
         return AccountsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
+
+
+def build_accounts_gateway_locust_http_client():
+    return None
