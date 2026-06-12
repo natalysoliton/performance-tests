@@ -1,7 +1,11 @@
 from grpc import Channel
+from locust.env import Environment
 
 from clients.grpc.client import GRPCClient
-from clients.grpc.gateway.client import build_gateway_grpc_client
+from clients.grpc.gateway.client import (
+    build_gateway_grpc_client,
+    build_gateway_locust_grpc_client
+)
 from contracts.services.gateway.documents.documents_gateway_service_pb2_grpc import DocumentsGatewayServiceStub
 from contracts.services.gateway.documents.rpc_get_contract_document_pb2 import (
     GetContractDocumentRequest,
@@ -16,44 +20,8 @@ from contracts.services.gateway.documents.rpc_get_tariff_document_pb2 import (
 class DocumentsGatewayGRPCClient(GRPCClient):
     """
     gRPC-клиент для взаимодействия с DocumentsGatewayService.
-    Предоставляет высокоуровневые методы для работы с документами.
     """
-
-    def __init__(self, channel: Channel):
-        """
-        Инициализация клиента с указанным gRPC-каналом.
-
-        :param channel: gRPC-канал для подключения к DocumentsGatewayService.
-        """
-        super().__init__(channel)
-
-        self.stub = DocumentsGatewayServiceStub(channel)
-
-    def get_tariff_document_api(self, request: GetTariffDocumentRequest) -> GetTariffDocumentResponse:
-        """
-        Низкоуровневый вызов метода GetTariffDocument через gRPC.
-
-        :param request: gRPC-запрос с ID счета.
-        :return: Ответ от сервиса с данными документа тарифа.
-        """
-        return self.stub.GetTariffDocument(request)
-
-    def get_contract_document_api(self, request: GetContractDocumentRequest) -> GetContractDocumentResponse:
-        """
-        Низкоуровневый вызов метода GetContractDocument через gRPC.
-
-        :param request: gRPC-запрос с ID счета.
-        :return: Ответ от сервиса с данными документа контракта.
-        """
-        return self.stub.GetContractDocument(request)
-
-    def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponse:
-        request = GetTariffDocumentRequest(account_id=account_id)
-        return self.get_tariff_document_api(request)
-
-    def get_contract_document(self, account_id: str) -> GetContractDocumentResponse:
-        request = GetContractDocumentRequest(account_id=account_id)
-        return self.get_contract_document_api(request)
+    # ... (весь существующий код класса) ...
 
 
 def build_documents_gateway_grpc_client() -> DocumentsGatewayGRPCClient:
@@ -63,3 +31,15 @@ def build_documents_gateway_grpc_client() -> DocumentsGatewayGRPCClient:
     :return: Инициализированный клиент для DocumentsGatewayService.
     """
     return DocumentsGatewayGRPCClient(channel=build_gateway_grpc_client())
+
+
+def build_documents_gateway_locust_grpc_client(environment: Environment) -> DocumentsGatewayGRPCClient:
+    """
+    Фабричная функция для создания экземпляра DocumentsGatewayGRPCClient,
+    адаптированного для нагрузочного тестирования с Locust.
+
+    :param environment: Объект окружения Locust
+    :return: Экземпляр DocumentsGatewayGRPCClient со встроенным сбором метрик
+    """
+    channel = build_gateway_locust_grpc_client(environment)
+    return DocumentsGatewayGRPCClient(channel=channel)
