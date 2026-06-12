@@ -1,0 +1,27 @@
+
+{
+  "users": [
+    {
+      "user_id": "b0ddd310-d47a-42f4-a059-8f736d1227bc",
+      "deposit_accounts": [],
+      "savings_accounts": [],
+      "debit_card_accounts": [],
+      "credit_card_accounts": [
+        {
+          "account_id": "a6407f43-a299-4192-8e6d-ab83fad62b86",
+          "virtual_cards": [],
+          "physical_cards": [
+            {
+              "card_id": "2a5e1ac9-fd65-41c3-ae41-3324af16de11"
+            }
+          ],
+          "top_up_operations": [],
+          "transfer_operations": [],
+          "purchase_operations": [],
+          "cash_withdrawal_operations": []
+        }
+      ]
+    }
+
+  ]
+}

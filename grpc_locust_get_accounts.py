@@ -96,7 +96,7 @@ class GetAccountsScenarioUser(User):
     Задачи выполняются в произвольном порядке с весами:
     - create_user: 2
     - open_deposit_account: 2
-    - get_accounts: 6
+    - new_user_get_accounts: 6
     """
 
     # Атрибут host обязателен для Locust (фиктивное значение)
