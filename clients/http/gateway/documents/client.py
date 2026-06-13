@@ -87,3 +87,23 @@ def build_documents_gateway_locust_http_client(environment: Environment) -> Docu
     :return: Экземпляр DocumentsGatewayHTTPClient с настроенным HTTP-клиентом для сбора метрик
     """
     return DocumentsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
+
+
+class DocumentDict:
+    pass
+
+
+class GetTariffDocumentResponseDict:
+    pass
+
+
+class GetContractDocumentResponseDict:
+    pass
+
+
+class GetTariffDocumentQuery:
+    pass
+
+
+class GetContractDocumentQuery:
+    pass

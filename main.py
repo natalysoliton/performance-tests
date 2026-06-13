@@ -2,7 +2,8 @@
 
 from typing import TypedDict, Optional, Dict, Any
 import httpx
-from ...client import HTTPClient
+
+from clients.http.client import HTTPClient
 
 
 class VirtualCardRequest(TypedDict):

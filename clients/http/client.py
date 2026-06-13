@@ -10,6 +10,7 @@ from typing import Any, TypedDict
 
 from httpx import Client, Response, QueryParams, URL
 
+
 # Тип расширений, которые можно передать в запрос
 # В нашем случае мы используем только параметр "route", но можно добавить и другие
 class HTTPClientExtensions(TypedDict, total=False):
@@ -57,6 +58,7 @@ class HTTPClient:
         :return: Объект Response с данными ответа.
         """
         return self.client.post(url=url, json=json, extensions=extensions)  # extensions передаётся в httpx.Client
+
 
 def build_gateway_http_client() -> Client:
     """
