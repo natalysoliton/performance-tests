@@ -1,5 +1,6 @@
-from locust.env import Environment  # Импорт окружения Locust
-from httpx import Client, Response, QueryParams, URL
+from httpx import Response
+from locust.env import Environment
+
 from clients.http.client import HTTPClient
 from clients.http.gateway.cards.schema import (
     IssueVirtualCardRequestSchema,
@@ -7,39 +8,41 @@ from clients.http.gateway.cards.schema import (
     IssuePhysicalCardRequestSchema,
     IssuePhysicalCardResponseSchema
 )
-from clients.http.gateway.client import build_gateway_http_client
-from clients.http.gateway.client import build_gateway_locust_http_client
+from clients.http.gateway.client import (
+    build_gateway_http_client,
+    build_gateway_locust_http_client
+)
+from tools.routes import APIRoutes  # Импортируем enum APIRoutes
+
 
 class CardsGatewayHTTPClient(HTTPClient):
     """
     Клиент для взаимодействия с /api/v1/cards сервиса http-gateway.
-
-    Предоставляет методы для работы с картами:
-    - Выпуск виртуальных карт
-    - Выпуск физических карт
     """
 
     def issue_virtual_card_api(self, request: IssueVirtualCardRequestSchema) -> Response:
         """
-        Выпуск виртуальной карты (низкоуровневый метод).
+        Выпуск виртуальной карты.
 
         :param request: Pydantic-модель с данными для выпуска виртуальной карты.
         :return: Ответ от сервера (объект httpx.Response).
         """
+        # Вместо /api/v1/cards используем APIRoutes.CARDS
         return self.post(
-            "/api/v1/cards/issue-virtual-card",
+            f"{APIRoutes.CARDS}/issue-virtual-card",
             json=request.model_dump(by_alias=True)
         )
 
     def issue_physical_card_api(self, request: IssuePhysicalCardRequestSchema) -> Response:
         """
-        Выпуск физической карты (низкоуровневый метод).
+        Выпуск физической карты.
 
         :param request: Pydantic-модель с данными для выпуска физической карты.
         :return: Ответ от сервера (объект httpx.Response).
         """
+        # Вместо /api/v1/cards используем APIRoutes.CARDS
         return self.post(
-            "/api/v1/cards/issue-physical-card",
+            f"{APIRoutes.CARDS}/issue-physical-card",
             json=request.model_dump(by_alias=True)
         )
 
@@ -80,14 +83,6 @@ def build_cards_gateway_http_client() -> CardsGatewayHTTPClient:
     """
     return CardsGatewayHTTPClient(client=build_gateway_http_client())
 
-def build_cards_gateway_http_client() -> CardsGatewayHTTPClient:
-    """
-    Функция создаёт экземпляр CardsGatewayHTTPClient с уже настроенным HTTP-клиентом.
-
-    :return: Готовый к использованию CardsGatewayHTTPClient.
-    """
-    return CardsGatewayHTTPClient(client=build_gateway_http_client())
-
 
 # Новый билдер для нагрузочного тестирования
 def build_cards_gateway_locust_http_client(environment: Environment) -> CardsGatewayHTTPClient:
@@ -109,4 +104,3 @@ class VirtualCardRequest:
 
 class PhysicalCardRequest:
     pass
-

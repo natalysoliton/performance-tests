@@ -1,5 +1,5 @@
 from httpx import Response, QueryParams
-from locust.env import Environment  # Импорт окружения Locust
+from locust.env import Environment
 
 from clients.http.client import HTTPClient, HTTPClientExtensions
 from clients.http.gateway.accounts.schema import (
@@ -14,16 +14,11 @@ from clients.http.gateway.accounts.schema import (
     OpenCreditCardAccountRequestSchema,
     OpenCreditCardAccountResponseSchema
 )
-from clients.http.gateway.client import build_gateway_http_client
-from clients.http.gateway.users.schema import (
-    GetUserResponseSchema,
-    CreateUserRequestSchema,
-    CreateUserResponseSchema
-)
 from clients.http.gateway.client import (
     build_gateway_http_client,
-    build_gateway_locust_http_client  # Импорт билдера для нагрузочного тестирования
+    build_gateway_locust_http_client
 )
+from tools.routes import APIRoutes  # Импортируем enum APIRoutes
 
 class UsersGatewayHTTPClient(HTTPClient):
     """
@@ -62,9 +57,11 @@ class AccountsGatewayHTTPClient(HTTPClient):
         :param query: Pydantic-модель с параметрами запроса, например: {'userId': '123'}.
         :return: Объект httpx.Response с данными о счетах.
         """
+        # Вместо /api/v1/accounts используем APIRoutes.ACCOUNTS
         return self.get(
-            "/api/v1/accounts",
-            params=QueryParams(**query.model_dump(by_alias=True))
+            APIRoutes.ACCOUNTS,
+            params=QueryParams(**query.model_dump(by_alias=True)),
+            extensions=HTTPClientExtensions(route=APIRoutes.ACCOUNTS)
         )
 
     def open_deposit_account_api(self, request: OpenDepositAccountRequestSchema) -> Response:
@@ -74,8 +71,9 @@ class AccountsGatewayHTTPClient(HTTPClient):
         :param request: Pydantic-модель с userId.
         :return: Объект httpx.Response с результатом операции.
         """
+        # Вместо /api/v1/accounts используем APIRoutes.ACCOUNTS
         return self.post(
-            "/api/v1/accounts/open-deposit-account",
+            f"{APIRoutes.ACCOUNTS}/open-deposit-account",
             json=request.model_dump(by_alias=True)
         )
 
@@ -86,8 +84,9 @@ class AccountsGatewayHTTPClient(HTTPClient):
         :param request: Pydantic-модель с userId.
         :return: Объект httpx.Response.
         """
+        # Вместо /api/v1/accounts используем APIRoutes.ACCOUNTS
         return self.post(
-            "/api/v1/accounts/open-savings-account",
+            f"{APIRoutes.ACCOUNTS}/open-savings-account",
             json=request.model_dump(by_alias=True)
         )
 
@@ -98,8 +97,9 @@ class AccountsGatewayHTTPClient(HTTPClient):
         :param request: Pydantic-модель с userId.
         :return: Объект httpx.Response.
         """
+        # Вместо /api/v1/accounts используем APIRoutes.ACCOUNTS
         return self.post(
-            "/api/v1/accounts/open-debit-card-account",
+            f"{APIRoutes.ACCOUNTS}/open-debit-card-account",
             json=request.model_dump(by_alias=True)
         )
 
@@ -110,8 +110,9 @@ class AccountsGatewayHTTPClient(HTTPClient):
         :param request: Pydantic-модель с userId.
         :return: Объект httpx.Response.
         """
+        # Вместо /api/v1/accounts используем APIRoutes.ACCOUNTS
         return self.post(
-            "/api/v1/accounts/open-credit-card-account",
+            f"{APIRoutes.ACCOUNTS}/open-credit-card-account",
             json=request.model_dump(by_alias=True)
         )
 
