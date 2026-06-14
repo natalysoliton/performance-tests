@@ -1,5 +1,5 @@
 from locust import User, between
-
+from config import settings  # ← импорт глобального объекта настроек
 
 class LocustBaseUser(User):
     """
@@ -8,4 +8,7 @@ class LocustBaseUser(User):
     """
     host: str = "localhost"  # Фиктивный хост, необходим для соответствия API Locust
     abstract = True  # Пометка, что этот класс не должен запускаться напрямую
-    wait_time = between(1, 3)  # Ожидание между задачами (в секундах)
+    wait_time = between(
+        min_wait=settings.locust_user.wait_time_min,
+        max_wait=settings.locust_user.wait_time_max
+    )
