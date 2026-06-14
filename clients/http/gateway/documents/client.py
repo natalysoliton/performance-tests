@@ -10,6 +10,7 @@ from clients.http.gateway.documents.schema import (
     GetTariffDocumentResponseSchema,
     GetContractDocumentResponseSchema
 )
+from tools.routes import APIRoutes  # Импортируем enum APIRoutes
 
 
 class DocumentsGatewayHTTPClient(HTTPClient):
@@ -19,26 +20,26 @@ class DocumentsGatewayHTTPClient(HTTPClient):
 
     def get_tariff_document_api(self, account_id: str) -> Response:
         """
-        Получить тарифа по счету.
+        Получить тарифный документ по счету.
 
         :param account_id: Идентификатор счета.
         :return: Ответ от сервера (объект httpx.Response).
         """
         return self.get(
-            f"/api/v1/documents/tariff-document/{account_id}",
-            extensions=HTTPClientExtensions(route="/api/v1/documents/tariff-document/{account_id}")
+            f"{APIRoutes.DOCUMENTS}/tariff-document/{account_id}",
+            extensions=HTTPClientExtensions(route=f"{APIRoutes.DOCUMENTS}/tariff-document/{{account_id}}")
         )
 
     def get_contract_document_api(self, account_id: str) -> Response:
         """
-        Получить контракта по счету.
+        Получить контрактный документ по счету.
 
         :param account_id: Идентификатор счета.
         :return: Ответ от сервера (объект httpx.Response).
         """
         return self.get(
-            f"/api/v1/documents/contract-document/{account_id}",
-            extensions=HTTPClientExtensions(route="/api/v1/documents/contract-document/{account_id}")
+            f"{APIRoutes.DOCUMENTS}/contract-document/{account_id}",
+            extensions=HTTPClientExtensions(route=f"{APIRoutes.DOCUMENTS}/contract-document/{{account_id}}")
         )
 
     def get_tariff_document(self, account_id: str) -> GetTariffDocumentResponseSchema:
@@ -87,23 +88,3 @@ def build_documents_gateway_locust_http_client(environment: Environment) -> Docu
     :return: Экземпляр DocumentsGatewayHTTPClient с настроенным HTTP-клиентом для сбора метрик
     """
     return DocumentsGatewayHTTPClient(client=build_gateway_locust_http_client(environment))
-
-
-class DocumentDict:
-    pass
-
-
-class GetTariffDocumentResponseDict:
-    pass
-
-
-class GetContractDocumentResponseDict:
-    pass
-
-
-class GetTariffDocumentQuery:
-    pass
-
-
-class GetContractDocumentQuery:
-    pass
