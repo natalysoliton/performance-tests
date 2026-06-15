@@ -1,0 +1,14 @@
+api_url: http://localhost:13000
+service:
+  id: 2  # ID сервиса grpc gateway
+scenario:
+  id: 22  # ID сценария new user issue physical card
+  name: "new user issue physical card"
+  file: "./scenarios/grpc/gateway/new_user_issue_physical_card/v1.0.conf"
+  version: "v1.0"
+  number_of_users: 80
+  runtime_duration: "4m"
+csv_locust_stats_file: "locust_grpc_gateway_new_user_issue_physical_card_stats.csv"
+json_locust_ratio_file: "locust_grpc_gateway_new_user_issue_physical_card_ratio.json"
+csv_locust_exceptions_file: "locust_grpc_gateway_new_user_issue_physical_card_exceptions.csv"
+csv_locust_stats_history_file: "locust_grpc_gateway_new_user_issue_physical_card_stats_history.csv"

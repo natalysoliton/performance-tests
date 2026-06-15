@@ -1,0 +1,14 @@
+api_url: http://localhost:13000
+service:
+  id: 2  # ID сервиса grpc gateway
+scenario:
+  id: 23  # ID сценария new user make top up operation
+  name: "new user make top up operation"
+  file: "./scenarios/grpc/gateway/new_user_make_top_up_operation/v1.0.conf"
+  version: "v1.0"
+  number_of_users: 100
+  runtime_duration: "3m"
+csv_locust_stats_file: "locust_grpc_gateway_new_user_make_top_up_operation_stats.csv"
+json_locust_ratio_file: "locust_grpc_gateway_new_user_make_top_up_operation_ratio.json"
+csv_locust_exceptions_file: "locust_grpc_gateway_new_user_make_top_up_operation_exceptions.csv"
+csv_locust_stats_history_file: "locust_grpc_gateway_new_user_make_top_up_operation_stats_history.csv"

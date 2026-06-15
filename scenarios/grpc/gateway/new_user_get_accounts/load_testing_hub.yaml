@@ -1,0 +1,14 @@
+api_url: http://localhost:13000
+service:
+  id: 2  # ID сервиса grpc gateway
+scenario:
+  id: 20  # ID сценария new user get accounts
+  name: "new user get accounts"
+  file: "./scenarios/grpc/gateway/new_user_get_accounts/v1.0.conf"
+  version: "v1.0"
+  number_of_users: 300
+  runtime_duration: "1m"
+csv_locust_stats_file: "locust_grpc_gateway_new_user_get_accounts_stats.csv"
+json_locust_ratio_file: "locust_grpc_gateway_new_user_get_accounts_ratio.json"
+csv_locust_exceptions_file: "locust_grpc_gateway_new_user_get_accounts_exceptions.csv"
+csv_locust_stats_history_file: "locust_grpc_gateway_new_user_get_accounts_stats_history.csv"
