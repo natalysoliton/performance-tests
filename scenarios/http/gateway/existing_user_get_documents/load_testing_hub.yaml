@@ -1,0 +1,14 @@
+api_url: http://localhost:13000
+service:
+  id: 1
+scenario:
+  id: 1
+  name: "existing user get documents"
+  file: "./scenarios/http/gateway/existing_user_get_documents/v1.0.conf"
+  version: "v1.0"
+  number_of_users: 100
+  runtime_duration: "3m"
+csv_locust_stats_file: "locust_http_gateway_existing_user_get_documents_stats.csv"
+json_locust_ratio_file: "locust_http_gateway_existing_user_get_documents_ratio.json"
+csv_locust_exceptions_file: "locust_http_gateway_existing_user_get_documents_exceptions.csv"
+csv_locust_stats_history_file: "locust_http_gateway_existing_user_get_documents_stats_history.csv"
