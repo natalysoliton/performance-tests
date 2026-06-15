@@ -1,0 +1,59 @@
+version: "3.9"  # Версия синтаксиса docker-compose
+
+services:
+  # ------------------------------
+  # PostgreSQL — база данных для хранения метрик
+  # ------------------------------
+  db:
+    image: postgres:16-alpine  # Лёгкий образ PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Храним данные на диске (volume)
+    environment:
+      POSTGRES_DB: load_testing_metrics_db  # Имя базы данных
+      POSTGRES_USER: load_testing_metrics_user  # Имя пользователя
+      POSTGRES_PASSWORD: load_testing_metrics_password  # Пароль пользователя
+    healthcheck:
+      # Проверка готовности базы
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      retries: 5       # Количество повторов
+      timeout: 3s      # Таймаут одного запроса
+      interval: 5s     # Интервал между проверками
+    container_name: db
+  # ------------------------------
+  # Backend API (load-testing-hub-api)
+  # ------------------------------
+  api:
+    image: nikitafilonov/load-testing-hub-api:latest  # Образ бэкенда
+    ports: [ "13000:13000" ]  # Проброс порта: хост:контейнер
+    env_file: [ .env.load-testing-hub ]  # Подключаем переменные окружения
+    depends_on:
+      migrator: # API запускается только после успешного выполнения миграций
+        condition: service_completed_successfully
+    container_name: api  # Имя контейнера для удобства
+
+  # ------------------------------
+  # Frontend Panel (load-testing-hub-panel)
+  # ------------------------------
+  panel:
+    image: nikitafilonov/load-testing-hub-panel:latest  # Образ фронтенда
+    ports: [ "13100:13100" ]  # Проброс порта для UI
+    env_file: [ .env.load-testing-hub ]
+    container_name: panel
+
+  # ------------------------------
+  # Migrator — выполняет миграции базы данных
+  # ------------------------------
+  migrator:
+    image: nikitafilonov/load-testing-hub-api:latest  # Используем тот же образ, что и API
+    command: alembic upgrade head  # Запускаем миграции Alembic до последней версии
+    env_file: [ .env.load-testing-hub ]
+    depends_on:
+      db:
+        condition: service_healthy  # Ждём, пока база будет готова
+    container_name: migrator
+
+# ------------------------------
+# Том для хранения данных PostgreSQL
+# ------------------------------
+volumes:
+  postgres_data:
